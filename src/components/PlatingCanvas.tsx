@@ -1,65 +1,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
-import { Button } from "./ui/button";
 import { toast } from "sonner";
-import { ImagePlus, Save, Upload, Download, Trash2, Undo, Shapes } from "lucide-react";
-
-const PRESET_ELEMENTS = [
-  {
-    type: "garnish",
-    url: "https://images.unsplash.com/photo-1604152135912-04a022e23696?w=200&h=200&fit=crop&auto=format",
-    title: "Micro Herbs"
-  },
-  {
-    type: "garnish",
-    url: "https://images.unsplash.com/photo-1587324438673-56c78a866b15?w=200&h=200&fit=crop&auto=format",
-    title: "Edible Flowers"
-  },
-  {
-    type: "garnish",
-    url: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=200&h=200&fit=crop&auto=format",
-    title: "Fresh Greens"
-  },
-  {
-    type: "garnish",
-    url: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=200&h=200&fit=crop&auto=format",
-    title: "Citrus Garnish"
-  },
-  {
-    type: "plate",
-    url: "https://images.unsplash.com/photo-1615278166719-537516ae2263?w=400&h=400&fit=crop&auto=format",
-    title: "White Plate"
-  },
-  {
-    type: "plate",
-    url: "https://images.unsplash.com/photo-1615278166728-77257d10e85f?w=400&h=400&fit=crop&auto=format",
-    title: "Black Plate"
-  },
-  {
-    type: "plate",
-    url: "https://images.unsplash.com/photo-1615278165715-b0fb8447e5c4?w=400&h=400&fit=crop&auto=format",
-    title: "Gray Plate"
-  },
-  {
-    type: "sauce",
-    url: "https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=200&h=200&fit=crop&auto=format",
-    title: "Red Sauce"
-  }
-];
-
-const TUTORIAL_VIDEOS = [
-  {
-    title: "Basic Plating Techniques",
-    url: "https://www.youtube.com/embed/mxqgUmrRUDE",
-    description: "Learn the fundamentals of professional plating"
-  },
-  {
-    title: "Advanced Garnishing",
-    url: "https://www.youtube.com/embed/fnvCuxhdHhk",
-    description: "Master the art of garnishing"
-  }
-];
+import { PlatingToolbar } from "./plating/PlatingToolbar";
+import { PresetElementsGrid } from "./plating/PresetElementsGrid";
+import { TutorialVideos } from "./plating/TutorialVideos";
+import { PRESET_ELEMENTS, TUTORIAL_VIDEOS } from "../constants/platingPresets";
 
 export const PlatingCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -75,10 +21,8 @@ export const PlatingCanvas = () => {
       backgroundColor: "#ffffff",
     });
 
-    // Enable object selection
     fabricCanvas.selection = true;
 
-    // Add event listeners
     fabricCanvas.on("object:moving", (e) => {
       if (!e.target) return;
       const obj = e.target;
@@ -208,97 +152,28 @@ export const PlatingCanvas = () => {
 
   return (
     <div className="space-y-6">
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-4 p-4 bg-white rounded-lg shadow-sm border">
-        <Button onClick={saveDesign}>
-          <Save className="mr-2 h-4 w-4" />
-          Save
-        </Button>
-        <Button variant="outline" onClick={loadDesign}>
-          <Upload className="mr-2 h-4 w-4" />
-          Load
-        </Button>
-        <Button variant="outline" onClick={downloadCanvas}>
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
-        <Button variant="outline" onClick={() => addShape("circle")}>
-          <Shapes className="mr-2 h-4 w-4" />
-          Add Circle
-        </Button>
-        <Button variant="outline" onClick={() => addShape("rectangle")}>
-          <Shapes className="mr-2 h-4 w-4" />
-          Add Rectangle
-        </Button>
-        <label className="cursor-pointer">
-          <Button variant="outline" asChild>
-            <span>
-              <ImagePlus className="mr-2 h-4 w-4" />
-              Upload Image
-            </span>
-          </Button>
-          <input
-            type="file"
-            className="hidden"
-            accept="image/*"
-            onChange={handleFileUpload}
-          />
-        </label>
-        {selectedElement && (
-          <Button variant="destructive" onClick={deleteSelected}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete Selected
-          </Button>
-        )}
-      </div>
+      <PlatingToolbar
+        onSave={saveDesign}
+        onLoad={loadDesign}
+        onDownload={downloadCanvas}
+        onAddCircle={() => addShape("circle")}
+        onAddRectangle={() => addShape("rectangle")}
+        onFileUpload={handleFileUpload}
+        onDelete={deleteSelected}
+        hasSelectedElement={!!selectedElement}
+      />
 
-      {/* Preset Elements */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white rounded-lg shadow-sm border">
-        <h3 className="col-span-full text-lg font-medium mb-2">Quick Add Elements</h3>
-        {PRESET_ELEMENTS.map((element, index) => (
-          <div
-            key={index}
-            onClick={() => addImage(element.url)}
-            className="cursor-pointer group relative aspect-square rounded-lg overflow-hidden border hover:border-primary transition-colors"
-          >
-            <img
-              src={element.url}
-              alt={element.title}
-              className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-white text-sm font-medium">{element.title}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+      <PresetElementsGrid 
+        elements={PRESET_ELEMENTS}
+        onElementClick={addImage}
+      />
 
-      {/* Canvas */}
       <div className="border rounded-lg overflow-hidden shadow-lg bg-white">
         <canvas ref={canvasRef} className="max-w-full" />
       </div>
 
-      {/* Tutorial Videos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-white rounded-lg shadow-sm border">
-        <h3 className="col-span-full text-lg font-medium mb-2">Learn from the Experts</h3>
-        {TUTORIAL_VIDEOS.map((video, index) => (
-          <div key={index} className="space-y-2">
-            <div className="relative aspect-video rounded-lg overflow-hidden">
-              <iframe
-                src={video.url}
-                title={video.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full"
-              />
-            </div>
-            <h4 className="font-medium">{video.title}</h4>
-            <p className="text-sm text-muted-foreground">{video.description}</p>
-          </div>
-        ))}
-      </div>
+      <TutorialVideos videos={TUTORIAL_VIDEOS} />
 
-      {/* Instructions */}
       <div className="text-sm text-muted-foreground">
         <p>Tip: Click and drag elements to move them. Use the corner handles to resize.</p>
       </div>
