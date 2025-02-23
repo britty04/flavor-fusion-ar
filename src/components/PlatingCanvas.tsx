@@ -1,29 +1,29 @@
 
 import { useEffect, useRef, useState } from "react";
-import { Canvas as FabricCanvas, IEvent } from "fabric";
+import { fabric } from "fabric";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 
 export const PlatingCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvas, setCanvas] = useState<FabricCanvas | null>(null);
+  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    const fabricCanvas = new FabricCanvas(canvasRef.current, {
+    const fabricCanvas = new fabric.Canvas(canvasRef.current, {
       width: 800,
       height: 600,
       backgroundColor: "#ffffff",
     });
 
-    fabricCanvas.on("object:moving", (e: IEvent) => {
+    fabricCanvas.on("object:moving", (e) => {
       if (!e.target) return;
       const obj = e.target;
       obj.opacity = 0.5;
     });
 
-    fabricCanvas.on("object:modified", (e: IEvent) => {
+    fabricCanvas.on("object:modified", (e) => {
       if (!e.target) return;
       const obj = e.target;
       obj.opacity = 1;
