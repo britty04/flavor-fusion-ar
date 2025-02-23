@@ -2,8 +2,15 @@
 declare module 'fabric' {
   export namespace fabric {
     interface IObjectOptions {
-      id?: string;
-      name?: string;
+      left?: number;
+      top?: number;
+      fill?: string;
+      stroke?: string;
+      strokeWidth?: number;
+      radius?: number;
+      width?: number;
+      height?: number;
+      opacity?: number;
     }
 
     class Canvas {
@@ -21,6 +28,8 @@ declare module 'fabric' {
       height?: number;
       selection: boolean;
       on(event: string, handler: Function): Canvas;
+      clear(): Canvas;
+      backgroundColor: string;
     }
 
     class Object {
@@ -36,11 +45,11 @@ declare module 'fabric' {
     }
 
     class Circle extends Object {
-      constructor(options?: any);
+      constructor(options?: IObjectOptions);
     }
 
     class Rect extends Object {
-      constructor(options?: any);
+      constructor(options?: IObjectOptions);
     }
   }
 }

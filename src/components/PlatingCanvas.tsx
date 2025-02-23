@@ -17,6 +17,16 @@ const PRESET_ELEMENTS = [
     title: "Edible Flowers"
   },
   {
+    type: "garnish",
+    url: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=200&h=200&fit=crop&auto=format",
+    title: "Fresh Greens"
+  },
+  {
+    type: "garnish",
+    url: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=200&h=200&fit=crop&auto=format",
+    title: "Citrus Garnish"
+  },
+  {
     type: "plate",
     url: "https://images.unsplash.com/photo-1615278166719-537516ae2263?w=400&h=400&fit=crop&auto=format",
     title: "White Plate"
@@ -25,6 +35,29 @@ const PRESET_ELEMENTS = [
     type: "plate",
     url: "https://images.unsplash.com/photo-1615278166728-77257d10e85f?w=400&h=400&fit=crop&auto=format",
     title: "Black Plate"
+  },
+  {
+    type: "plate",
+    url: "https://images.unsplash.com/photo-1615278165715-b0fb8447e5c4?w=400&h=400&fit=crop&auto=format",
+    title: "Gray Plate"
+  },
+  {
+    type: "sauce",
+    url: "https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=200&h=200&fit=crop&auto=format",
+    title: "Red Sauce"
+  }
+];
+
+const TUTORIAL_VIDEOS = [
+  {
+    title: "Basic Plating Techniques",
+    url: "https://www.youtube.com/embed/mxqgUmrRUDE",
+    description: "Learn the fundamentals of professional plating"
+  },
+  {
+    title: "Advanced Garnishing",
+    url: "https://www.youtube.com/embed/fnvCuxhdHhk",
+    description: "Master the art of garnishing"
   }
 ];
 
@@ -77,15 +110,13 @@ export const PlatingCanvas = () => {
     if (!canvas) return;
 
     fabric.Image.fromURL(url, (img) => {
-      // Scale the image to a reasonable size
       const scale = Math.min(200 / img.width!, 200 / img.height!);
-      img.scale(scale);
-
-      // Center the image
       img.set({
         left: (canvas.width! - img.width! * scale) / 2,
-        top: (canvas.height! - img.height! * scale) / 2
+        top: (canvas.height! - img.height! * scale) / 2,
+        opacity: 1
       });
+      img.scale(scale);
 
       canvas.add(img);
       canvas.setActiveObject(img);
@@ -245,6 +276,26 @@ export const PlatingCanvas = () => {
       {/* Canvas */}
       <div className="border rounded-lg overflow-hidden shadow-lg bg-white">
         <canvas ref={canvasRef} className="max-w-full" />
+      </div>
+
+      {/* Tutorial Videos */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-white rounded-lg shadow-sm border">
+        <h3 className="col-span-full text-lg font-medium mb-2">Learn from the Experts</h3>
+        {TUTORIAL_VIDEOS.map((video, index) => (
+          <div key={index} className="space-y-2">
+            <div className="relative aspect-video rounded-lg overflow-hidden">
+              <iframe
+                src={video.url}
+                title={video.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
+            <h4 className="font-medium">{video.title}</h4>
+            <p className="text-sm text-muted-foreground">{video.description}</p>
+          </div>
+        ))}
       </div>
 
       {/* Instructions */}
