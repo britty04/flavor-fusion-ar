@@ -1,6 +1,6 @@
 
 import { Button } from "../ui/button";
-import { ImagePlus, Save, Upload, Download, Trash2, Shapes } from "lucide-react";
+import { ImagePlus, Save, Upload, Download, Trash2, Shapes, RotateCcw, Copy, PaintBucket } from "lucide-react";
 
 interface PlatingToolbarProps {
   onSave: () => void;
@@ -10,6 +10,9 @@ interface PlatingToolbarProps {
   onAddRectangle: () => void;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDelete: () => void;
+  onDuplicate: () => void;
+  onUndo: () => void;
+  onChangeColor: (color: string) => void;
   hasSelectedElement: boolean;
 }
 
@@ -21,6 +24,9 @@ export const PlatingToolbar = ({
   onAddRectangle,
   onFileUpload,
   onDelete,
+  onDuplicate,
+  onUndo,
+  onChangeColor,
   hasSelectedElement
 }: PlatingToolbarProps) => {
   return (
@@ -60,11 +66,27 @@ export const PlatingToolbar = ({
         />
       </label>
       {hasSelectedElement && (
-        <Button variant="destructive" onClick={onDelete}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete Selected
-        </Button>
+        <>
+          <Button variant="outline" onClick={onDuplicate}>
+            <Copy className="mr-2 h-4 w-4" />
+            Duplicate
+          </Button>
+          <input
+            type="color"
+            onChange={(e) => onChangeColor(e.target.value)}
+            className="h-10 w-10 rounded-md cursor-pointer"
+            title="Change Color"
+          />
+          <Button variant="destructive" onClick={onDelete}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </Button>
+        </>
       )}
+      <Button variant="outline" onClick={onUndo}>
+        <RotateCcw className="mr-2 h-4 w-4" />
+        Undo
+      </Button>
     </div>
   );
 };

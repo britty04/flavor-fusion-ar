@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import { toast } from "sonner";
@@ -11,6 +10,8 @@ export const PlatingCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [selectedElement, setSelectedElement] = useState<fabric.Object | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -33,6 +34,7 @@ export const PlatingCanvas = () => {
       if (!e.target) return;
       const obj = e.target;
       obj.opacity = 1;
+      saveToHistory();
     });
 
     fabricCanvas.on("selection:created", (e) => {
@@ -44,11 +46,56 @@ export const PlatingCanvas = () => {
     });
 
     setCanvas(fabricCanvas);
+    saveToHistory();
 
     return () => {
       fabricCanvas.dispose();
     };
   }, []);
+
+  const saveToHistory = () => {
+    if (!canvas) return;
+    const json = JSON.stringify(canvas.toJSON());
+    setHistory(prev => [...prev.slice(0, historyIndex + 1), json]);
+    setHistoryIndex(prev => prev + 1);
+  };
+
+  const undo = () => {
+    if (!canvas || historyIndex <= 0) return;
+    const previousState = history[historyIndex - 1];
+    if (previousState) {
+      canvas.loadFromJSON(previousState, () => {
+        canvas.renderAll();
+        setHistoryIndex(prev => prev - 1);
+        toast("Undo successful");
+      });
+    }
+  };
+
+  const duplicateSelected = () => {
+    if (!canvas || !selectedElement) return;
+    selectedElement.clone((cloned: fabric.Object) => {
+      cloned.set({
+        left: selectedElement.left! + 20,
+        top: selectedElement.top! + 20,
+      });
+      canvas.add(cloned);
+      canvas.setActiveObject(cloned);
+      canvas.renderAll();
+      saveToHistory();
+      toast("Element duplicated");
+    });
+  };
+
+  const changeElementColor = (color: string) => {
+    if (!canvas || !selectedElement) return;
+    selectedElement.set({
+      fill: color
+    });
+    canvas.renderAll();
+    saveToHistory();
+    toast("Color changed");
+  };
 
   const addImage = (url: string) => {
     if (!canvas) return;
@@ -150,22 +197,30 @@ export const PlatingCanvas = () => {
     toast("Design downloaded successfully!");
   };
 
+  const handleDelete = () => {
+    deleteSelected();
+    saveToHistory();
+  };
+
   return (
     <div className="space-y-6">
       <PlatingToolbar
         onSave={saveDesign}
         onLoad={loadDesign}
         onDownload={downloadCanvas}
-        onAddCircle={() => addShape("circle")}
-        onAddRectangle={() => addShape("rectangle")}
+        onAddCircle={() => { addShape("circle"); saveToHistory(); }}
+        onAddRectangle={() => { addShape("rectangle"); saveToHistory(); }}
         onFileUpload={handleFileUpload}
-        onDelete={deleteSelected}
+        onDelete={handleDelete}
+        onDuplicate={duplicateSelected}
+        onUndo={undo}
+        onChangeColor={changeElementColor}
         hasSelectedElement={!!selectedElement}
       />
 
       <PresetElementsGrid 
         elements={PRESET_ELEMENTS}
-        onElementClick={addImage}
+        onElementClick={(url) => { addImage(url); saveToHistory(); }}
       />
 
       <div className="border rounded-lg overflow-hidden shadow-lg bg-white">
